@@ -1,0 +1,21 @@
+group 'tonyduan.w1nxp'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+// lwjgl version
+def version = "3.0.0"
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile "org.lwjgl:lwjgl:${version}"
+    runtime "org.lwjgl:lwjgl-platform:${version}:natives-windows"
+    runtime "org.lwjgl:lwjgl-platform:${version}:natives-linux"
+    runtime "org.lwjgl:lwjgl-platform:${version}:natives-osx"
+}
