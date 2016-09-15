@@ -60,7 +60,7 @@ public class LWJGLDemo {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
         });
-
+        glfwSetWindowSizeCallback(window,(window,width,height) -> glViewport(0,0,width,height));
 
         glfwSetWindowCloseCallback(window, (w) -> glfwSetWindowShouldClose(w,true));
 
