@@ -14,6 +14,7 @@ public class LWJGLDemo {
 
     // The window handle
     private long window;
+    private Renderer renderer;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -59,26 +60,19 @@ public class LWJGLDemo {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
         });
+        glfwSetWindowSizeCallback(window,(window,width,height) -> glViewport(0,0,width,height));
 
-        // Get the resolution of the primary monitor
-        GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        // Center our window
-        glfwSetWindowPos(
-                window,
-                (vidmode.width() - WIDTH) / 2,
-                (vidmode.height() - HEIGHT) / 2
-        );
+        glfwSetWindowCloseCallback(window, (w) -> glfwSetWindowShouldClose(w,true));
+
+        adjustWindowPos(WIDTH,HEIGHT);
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
         // Enable v-sync
         glfwSwapInterval(1);
 
-        // Make the window visible
-        glfwShowWindow(window);
-    }
 
-    private void loop() {
+
         // This line is critical for LWJGL's interoperation with GLFW's
         // OpenGL context, or any context that is managed externally.
         // LWJGL detects the context that is current in the current thread,
@@ -86,13 +80,24 @@ public class LWJGLDemo {
         // bindings available for use.
         GL.createCapabilities();
 
+        // init renderer
+        renderer = new TriangleRenderer();
+
+        // Make the window visible
+        glfwShowWindow(window);
+    }
+
+    private void loop() {
+
+
         // Set the clear color
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
         while ( !glfwWindowShouldClose(window) ) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+            draw();
 
             glfwSwapBuffers(window); // swap the color buffers
 
@@ -100,6 +105,20 @@ public class LWJGLDemo {
             // invoked during this call.
             glfwPollEvents();
         }
+    }
+
+    private void adjustWindowPos(int width,int height) {
+        GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        glfwSetWindowPos(
+                window,
+                (vidmode.width() - width) / 2,
+                (vidmode.height() - height) / 2
+        );
+    }
+
+    public void draw() {
+        glColor3f(1,1,1);
+        renderer.render();
     }
 
     public static void main(String[] args) {
