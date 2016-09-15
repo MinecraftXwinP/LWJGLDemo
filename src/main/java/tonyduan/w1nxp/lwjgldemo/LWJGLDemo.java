@@ -61,6 +61,9 @@ public class LWJGLDemo {
                 glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
         });
 
+
+        glfwSetWindowCloseCallback(window, (w) -> glfwSetWindowShouldClose(w,true));
+
         adjustWindowPos(WIDTH,HEIGHT);
 
         // Make the OpenGL context current
