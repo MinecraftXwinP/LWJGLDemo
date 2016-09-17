@@ -5,9 +5,15 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.CharBuffer;
+
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class LWJGLDemo {
@@ -17,7 +23,7 @@ public class LWJGLDemo {
     private Renderer renderer;
 
     public void run() {
-        System.out.println("Hello LWJGL " + Version.getVersion() + "!");
+        System.out.println("LWJGLDemo with LWJGL " + Version.getVersion() + "!");
 
         try {
             init();
@@ -80,6 +86,9 @@ public class LWJGLDemo {
         // bindings available for use.
         GL.createCapabilities();
 
+        // shader program
+        initProgram();
+
         // init renderer
         renderer = new TriangleRenderer();
 
@@ -114,6 +123,59 @@ public class LWJGLDemo {
                 (vidmode.width() - width) / 2,
                 (vidmode.height() - height) / 2
         );
+    }
+
+    private Integer compileShader(int shaderType,String path) {
+        Integer shader;
+        CharBuffer buffer = null;
+        try (InputStream in = getClass().getResourceAsStream(path);InputStreamReader sourceIn  = new InputStreamReader(in)) {
+            buffer = CharBuffer.allocate(in.available());
+            sourceIn.read(buffer);
+            sourceIn.close();
+            buffer.flip();
+            shader = glCreateShader(shaderType);
+            glShaderSource(shader,buffer);
+            glCompileShader(shader);
+            if (glGetShaderi(shader,GL_COMPILE_STATUS) != GL_TRUE) {
+                // compile error
+                System.err.println("Shader compile error");
+                System.err.println(glGetShaderInfoLog(shader));
+                return null;
+            }
+        } catch (IOException  e) {
+            e.printStackTrace();
+            System.err.println("Cannot load vertex shader from : " + path);
+            if (buffer != null)
+                System.err.println("Input shader code is :\n" + buffer);
+            return null;
+        }
+        return shader;
+    }
+
+    private void initProgram() {
+        // vertex shader
+        Integer vshader = compileShader(GL_VERTEX_SHADER,"/shaders/vshader.vsh");
+        Integer fshader = compileShader(GL_FRAGMENT_SHADER,"/shaders/fshader.fsh");
+        int program;
+        if (vshader != null || fshader != null) {
+            program = glCreateProgram();
+            if (vshader != null) {
+                glAttachShader(program, vshader);
+                glDeleteShader(vshader);
+            }
+            if (fshader != null) {
+                glAttachShader(program, fshader);
+                glDeleteShader(fshader);
+            }
+            glLinkProgram(program);
+            if(glGetProgrami(program,GL_LINK_STATUS) == GL_TRUE)
+                glUseProgram(program);
+            else {
+                System.err.println("Failed to compile program: \n" + glGetProgramInfoLog(program));
+            }
+        } else {
+            System.out.println("No shader compiled, stop creating program");
+        }
     }
 
     public void draw() {
