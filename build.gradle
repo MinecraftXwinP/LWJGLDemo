@@ -2,11 +2,13 @@ group 'tonyduan.w1nxp'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'application'
 
 // lwjgl version
 def version = "3.0.0"
 
 sourceCompatibility = 1.8
+mainClassName = 'tonyduan.w1nxp.lwjgldemo.LWJGLDemo'
 
 repositories {
     mavenCentral()
