@@ -5,7 +5,9 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 // lwjgl version
-def version = "3.0.0"
+def lwjglVersion = "3.0.0"
+def log4jVersion = "2.6.2"
+def jacksonVersion = "2.2.2"
 
 sourceCompatibility = 1.8
 mainClassName = 'tonyduan.w1nxp.lwjgldemo.LWJGLDemo'
@@ -14,10 +16,20 @@ repositories {
     mavenCentral()
 }
 
+// exclude some development resource
+jar {
+    exclude 'log4j2-test.xml'
+}
+
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile "org.lwjgl:lwjgl:${version}"
-    runtime "org.lwjgl:lwjgl-platform:${version}:natives-windows"
-    runtime "org.lwjgl:lwjgl-platform:${version}:natives-linux"
-    runtime "org.lwjgl:lwjgl-platform:${version}:natives-osx"
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core',version: jacksonVersion
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind',version: jacksonVersion
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4jVersion
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4jVersion
+    compile "org.lwjgl:lwjgl:${lwjglVersion}"
+    runtime "org.lwjgl:lwjgl-platform:${lwjglVersion}:natives-windows"
+    runtime "org.lwjgl:lwjgl-platform:${lwjglVersion}:natives-linux"
+    runtime "org.lwjgl:lwjgl-platform:${lwjglVersion}:natives-osx"
 }

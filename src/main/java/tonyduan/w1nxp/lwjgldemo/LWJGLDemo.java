@@ -1,5 +1,8 @@
 package tonyduan.w1nxp.lwjgldemo;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -15,15 +18,18 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static tonyduan.w1nxp.lwjgldemo.log.Markers.*;
 
 public class LWJGLDemo {
 
     // The window handle
     private long window;
     private Renderer renderer;
+    private final static Logger logger = LogManager.getLogger();
 
-    public void run() {
-        System.out.println("LWJGLDemo with LWJGL " + Version.getVersion() + "!");
+
+    private void run() {
+        logger.info("LWJGLDemo with LWJGL " + Version.getVersion() + "!");
 
         try {
             init();
@@ -43,7 +49,6 @@ public class LWJGLDemo {
         // Setup an error callback. The default implementation
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
-
         // Initialize GLFW. Most GLFW functions will not work before doing this.
         if ( !glfwInit() )
             throw new IllegalStateException("Unable to initialize GLFW");
@@ -76,8 +81,6 @@ public class LWJGLDemo {
         glfwMakeContextCurrent(window);
         // Enable v-sync
         glfwSwapInterval(1);
-
-
 
         // This line is critical for LWJGL's interoperation with GLFW's
         // OpenGL context, or any context that is managed externally.
@@ -126,9 +129,21 @@ public class LWJGLDemo {
     }
 
     private Integer compileShader(int shaderType,String path) {
+        if (!(shaderType == GL_VERTEX_SHADER || shaderType == GL_FRAGMENT_SHADER))
+            throw new IllegalArgumentException(
+                    String.format("shaderType must be either GL_VERTEX_SHADER (%d) or GL_FRAGMENT_SHADER (%d). Got: %d",
+                                    GL_VERTEX_SHADER,
+                                    GL_FRAGMENT_SHADER,
+                                    shaderType
+                    )
+            );
+        Marker loggingMarker = shaderType == GL_VERTEX_SHADER ?
+                                SHADER_LINKING_MARKER_VERTEX :
+                                SHADER_LINKING_MARKER_FRAGMENT;
         Integer shader;
         CharBuffer buffer = null;
-        try (InputStream in = getClass().getResourceAsStream(path);InputStreamReader sourceIn  = new InputStreamReader(in)) {
+        try (InputStream in = getClass().getResourceAsStream(path);
+             InputStreamReader sourceIn  = new InputStreamReader(in)) {
             buffer = CharBuffer.allocate(in.available());
             sourceIn.read(buffer);
             sourceIn.close();
@@ -138,15 +153,16 @@ public class LWJGLDemo {
             glCompileShader(shader);
             if (glGetShaderi(shader,GL_COMPILE_STATUS) != GL_TRUE) {
                 // compile error
-                System.err.println("Shader compile error");
-                System.err.println(glGetShaderInfoLog(shader));
+                logger.error(loggingMarker,
+                        "Failed to compile shader\n" + glGetShaderInfoLog(shader)
+                );
                 return null;
             }
         } catch (IOException  e) {
             e.printStackTrace();
-            System.err.println("Cannot load vertex shader from : " + path);
+            logger.error(loggingMarker,"Cannot load vertex shader from : " + path);
             if (buffer != null)
-                System.err.println("Input shader code is :\n" + buffer);
+                logger.error(loggingMarker,"Input shader code is :\n" + buffer);
             return null;
         }
         return shader;
@@ -171,14 +187,14 @@ public class LWJGLDemo {
             if(glGetProgrami(program,GL_LINK_STATUS) == GL_TRUE)
                 glUseProgram(program);
             else {
-                System.err.println("Failed to compile program: \n" + glGetProgramInfoLog(program));
+                logger.error(PROGRAM_COMPILATION,"Failed to compile program: \n" + glGetProgramInfoLog(program));
             }
         } else {
-            System.out.println("No shader compiled, stop creating program");
+            logger.info(PROGRAM_COMPILATION,"No shader attached, stop creating program");
         }
     }
 
-    public void draw() {
+    private void draw() {
         glColor3f(1,1,1);
         renderer.render();
     }
