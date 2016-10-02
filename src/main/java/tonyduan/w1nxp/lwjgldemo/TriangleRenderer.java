@@ -9,9 +9,12 @@ public class TriangleRenderer implements Renderer {
     private int vertexBuffer;
 
     public static float[] vertexs = {
-            0.75f,0.75f,0.0f,1.0f,
-            0.75f,-0.75f,0.0f,1.0f,
-            -0.75f,-0.75f,0.0f,1.0f
+            0.0f,       0.5f,   0.0f,   1.0f,
+            0.5f,    -0.366f,   0.0f,   1.0f,
+            -0.5f,   -0.366f,   0.0f,   1.0f,
+            1.0f,       0.0f,   0.0f,   1.0f,
+            0.0f,       1.0f,   0.0f,   1.0f,
+            0.0f,       0.0f,   1.0f,   1.0f
     };
 
     public TriangleRenderer() {
@@ -25,9 +28,12 @@ public class TriangleRenderer implements Renderer {
     public void render() {
         glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
         glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
         glVertexAttribPointer(0,4,GL_FLOAT,false,0,0);
+        glVertexAttribPointer(1,4,GL_FLOAT,false,0,48);
         glDrawArrays(GL_TRIANGLES,0,3);
         glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
         glBindBuffer(GL_ARRAY_BUFFER,0);
     }
 }
